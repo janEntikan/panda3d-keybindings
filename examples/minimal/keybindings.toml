@@ -1,0 +1,31 @@
+[demo_context]
+
+  [demo_context.demo_button]
+  _type = "button"
+  _device_order = ["gamepad", "flight_stick", "keyboard"]
+  gamepad = "face_a"
+  flight_stick = "trigger"
+  keyboard = "q"
+
+#  [demo_context.fake_button]
+#  _type = "button"
+#  _device_order = ["gamepad"]
+#  gamepad = "left_x"
+#
+  [demo_context.demo_axis_full]
+  _type = "axis"
+  _device_order = ["gamepad", "flight_stick", "keyboard"]
+  gamepad = "left_x"
+  flight_stick = "roll"
+  keyboard = "a,d"
+
+  [demo_context.demo_axis_2d]
+  _type = "axis2d"
+  _device_order = ["gamepad", "keyboard"]
+  gamepad = "left_x,left_y"
+  keyboard = "a,d,s,w"
+
+  [demo_context.demo_axis_3d]
+  _type = "axis3d"
+  _device_order = ["spatial_mouse"]
+  spatial_mouse = "x,y,z"

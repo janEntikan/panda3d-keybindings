@@ -1,0 +1,98 @@
+[interface]
+
+device_order = ["gamepad", "keyboard"]
+
+  [interface.camera_mode]
+
+  keyboard            = "c"
+  gamepad             = "dpad_down"
+
+  [interface.camera_yaw]
+
+  keyboard            = "axis:j,l"
+
+  [interface.camera_pitch]
+
+  keyboard            = "axis:k,i"
+
+  [interface.next_vehicle]
+
+  keyboard     = "n"
+  gamepad      = "dpad_up"
+
+[vehicle]
+
+_device_order = ["gamepad", "flight_stick", "keyboard"]
+
+  [vehicle.toggle_repulsor]
+
+  keyboard     = "r"
+  gamepad      = "face_b"
+  flight_stick = "joystick2"
+
+  [vehicle.forward]
+
+  keyboard     = "axis:w,s"
+  gamepad      = "left_y"
+  flight_stick = "pitch"
+
+  [vehicle.turn]
+
+  keyboard     = "axis:a,d"
+  gamepad      = "left_x"
+  flight_stick = "yaw"
+
+  [vehicle.strafe]
+
+  keyboard     = "lshift"
+  gamepad      = "lstick"
+  flight_stick = "roll"
+
+  [vehicle.full_repulsors]
+
+  keyboard     = "e"
+  gamepad      = "lshoulder"
+
+  [vehicle.switch_driving_mode]
+
+  keyboard     = "q"
+  gamepad      = "face_a"
+  flight_stick = "joystick3"
+
+  [vehicle.target_height]
+
+  keyboard     = "axis:f,v"
+  gamepad      = "axis:face_y,face_x"
+
+  [vehicle.stabilize]
+
+  gamepad      = "rstick"
+  flight_stick = "joystick4"
+
+  [vehicle.gyro_pitch]
+
+  keyboard     = "axis:arrow_up,arrow_down"
+  gamepad      = "right_y"
+  flight_stick = "axis:hat_down,hat_up"
+
+  [vehicle.gyro_roll]
+
+  keyboard     = "axis:arrow_left,arrow_right"
+  gamepad      = "right_x"
+  flight_stick = "axis:hat_left,hat_right"
+
+  [vehicle.thrust]
+
+  keyboard     = "space"
+  gamepad      = "ltrigger"
+  flight_stick = "trigger"
+
+  [vehicle.airbrake]
+
+  keyboard     = "tab"
+  gamepad      = "rshoulder"
+  flight_stick = "joystick7"
+
+  [vehicle.stabilizer_fins]
+
+  gamepad      = "rshoulder"
