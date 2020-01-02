@@ -268,7 +268,11 @@ class DeviceListener(DirectObject):
         return self.contexts[context].read(devices)
 
 
-def add_device_listener(assigner=None, debug=False):
+def add_device_listener(assigner=None, debug=False, config_file="keybindings.toml"):
     if assigner is None:
         assigner = LastConnectedAssigner()
-    base.device_listener = DeviceListener(assigner, debug=debug)
+    base.device_listener = DeviceListener(
+        assigner,
+        debug=debug,
+        config_file=config_file,
+    )
