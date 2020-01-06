@@ -38,14 +38,3 @@ if __name__ == '__main__':
         pprint(base.device_listener.read_context('demo_context'))
     base.accept('p', print_context)
     base.run()
-
-
-# base.attach_input_device(device, prefix="foo-")
-# base.detach_input_device(device)
-
-# from panda3d.core import ButtonRegistry
-# button_handle = ButtonRegistry.ptr().find_button(button_name)
-# button_handle.get_name() == 'none'
-
-# InputDevice.Axis
-# InputDevice.find_axis(InputDevice.Axis[axis_name])
