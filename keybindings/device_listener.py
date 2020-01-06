@@ -52,7 +52,12 @@ class Sensor:
             self.flags[name] = arg
         
     def get_config(self):
-        return self.sensor
+        result = self.sensor
+        for name, arg in self.flags.items():
+            result += ":" + name
+            if arg is not None:
+                result+= "=" + str(arg)
+        return result
 
     def read(self, device):
         if not device is None:  # Not a keyboard
@@ -242,8 +247,10 @@ class VirtualInput:
         return input_state
 
     def push_events(self, devices):
-        device, mapping = self.get_device_and_mapping(devices)
-        mapping.push_events(device)
+        thing = self.get_device_and_mapping(devices)
+        if thing is not None:
+            device, mapping = thing
+            mapping.push_events(device)
 
         input_state = self.read_raw(devices)
         if self.type == 'trigger':

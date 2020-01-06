@@ -134,5 +134,7 @@ TODO
 * Multi-user Assigner
 * Throw events
 * Freeze whole state each frame (currently only done for `mouse_*`)
-* Tell Sensors.get_config() that flags exist.
 * Upgrade example
+* Add subconsoles for panda3d-cefconsole
+  * Configure keybindings
+  * Reassign devices
