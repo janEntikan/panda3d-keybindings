@@ -25,7 +25,9 @@ class Sensor:
         "mouse_y_delta",
     ]
 
-    def __init__(self, sensor):
+    def __init__(self, config):
+        sensor, _, flags = config.partition(':')
+
         self.sensor = sensor
         if self.sensor in axis_names:
             self.axis = True
@@ -34,6 +36,20 @@ class Sensor:
         self.mouse_pos = None
         self.mouse_delta = None
 
+        if flags == '':
+            flags = []
+        else:
+            flags = flags.split(':')
+        self.flags = {}
+        for flag in flags:
+            name, _, arg = flag.partition('=')
+            assert name in ['flip', 'scale', 'button<', 'button>']
+            if name in ['scale', 'button<', 'button>']:
+                arg = float(arg)
+            else:
+                arg = None
+            self.flags[name] = arg
+        
     def get_config(self):
         return self.sensor
 
@@ -41,7 +57,16 @@ class Sensor:
         if not device is None:  # Not a keyboard
             if self.axis:
                 axis = device.find_axis(InputDevice.Axis[self.sensor])
-                return axis.value
+                state = axis.value
+                if 'flip' in self.flags:
+                    state *= -1
+                if 'scale' in self.flags:
+                    state *= self.flags['scale']
+                if 'button<' in self.flags:
+                    state = state <= self.flags['button<']
+                if 'button>' in self.flags:
+                    state = state >= self.flags['button>']
+                return state
             else:
                 button = device.find_button(self.sensor)
                 return button.pressed
