@@ -40,13 +40,14 @@ class Sensor:
             flags = []
         else:
             flags = flags.split(':')
-        self.flags = {}
+        self.flags = OrderedDict()
         for flag in flags:
             name, _, arg = flag.partition('=')
             assert name in ['flip', 'scale', 'button<', 'button>']
             if name in ['scale', 'button<', 'button>']:
                 arg = float(arg)
             else:
+                assert arg == ''
                 arg = None
             self.flags[name] = arg
         
@@ -58,39 +59,42 @@ class Sensor:
             if self.axis:
                 axis = device.find_axis(InputDevice.Axis[self.sensor])
                 state = axis.value
-                if 'flip' in self.flags:
-                    state *= -1
-                if 'scale' in self.flags:
-                    state *= self.flags['scale']
-                if 'button<' in self.flags:
-                    state = state <= self.flags['button<']
-                if 'button>' in self.flags:
-                    state = state >= self.flags['button>']
-                return state
             else:
                 button = device.find_button(self.sensor)
-                return button.pressed
+                state = button.pressed
         else:  # Keyboard
             if self.sensor in self.mouse_sensors:
                 if self.sensor in self.delta_sensors:
                     if self.mouse_delta is None:
-                        return None
+                        state = None
                     else:
                         if self.sensor == "mouse_x_delta":
-                            return self.mouse_delta.x
+                            state = self.mouse_delta.x
                         else:
-                            return self.mouse_delta.y
+                            state = self.mouse_delta.y
                 else:
                     if self.mouse_pos is None:
-                        return None
+                        state = None
                     else:
                         if self.sensor == "mouse_x":
-                            return self.mouse_pos.x
+                            state = self.mouse_pos.x
                         else:
-                            return self.mouse_pos.y
+                            state = self.mouse_pos.y
             else:
                 button = ButtonRegistry.ptr().find_button(self.sensor)
-                return base.mouseWatcherNode.is_button_down(button)
+                state = base.mouseWatcherNode.is_button_down(button)
+
+        for name, arg in self.flags.items():
+            if name == 'flip':
+                state *= -1
+            elif name == 'scale':
+                state *= arg
+            elif name == 'button<':
+                state = state <= arg
+            elif name == 'button>':
+                state = state >= arg
+
+        return state
 
     def push_events(self, device):
         if self.sensor in self.mouse_sensors:
