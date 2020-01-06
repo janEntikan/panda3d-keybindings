@@ -26,10 +26,14 @@ not be concerned with details like...
   "uniquely", and should be mappable independent of one another. Even
   with two identical sticks, there should be a way to check which is
   which ("Press trigger on left stick"), and label them accordingly.
-* providing an interface to work with the mappings. STATUS: 
+  NOTE: Not implemented yes.
+* providing an interface to work with the mappings. NOTE: Completely
+  inexistent so far.
 * if the state, when polled at different times during a frame, is still
   the same; It just should be. This is quite an edge case, but may cause
-  hard to reproduce bugs.
+  hard to reproduce bugs. NOTE: Currently only very partially
+  implemented, but the difference between that and the current version
+  is, after all, only relevant for that edge case.
 
 
 Status
