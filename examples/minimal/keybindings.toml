@@ -7,11 +7,11 @@
   flight_stick = "trigger"
   keyboard = "q"
 
-#  [demo_context.fake_button]
-#  _type = "button"
-#  _device_order = ["gamepad"]
-#  gamepad = "left_x"
-#
+  [demo_context.fake_button]
+  _type = "button"
+  _device_order = ["gamepad"]
+  gamepad = "left_x:button>=0.75"
+
   [demo_context.demo_axis_full]
   _type = "axis"
   _device_order = ["gamepad", "flight_stick", "keyboard"]

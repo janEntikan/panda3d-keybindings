@@ -1,5 +1,5 @@
 panda3d-keybindings
--------------------
+===================
 
 Panda3D comes with a nice API suite to work with input devices. In
 particular, it has one for USB HIDs, and one for mouse and keyboard.
@@ -16,9 +16,9 @@ not be concerned with details like...
   regard what devices should be checked. A player may prefer to cotrol
   character movement on a gamepad, but functions like invoking and
   working in menus with the keyboard.
-* how imput is preprocessed. Badly manufactured sticks create noise near
+* how input is preprocessed. Badly manufactured sticks create noise near
   the center, and may require a dead zone. An axis' amplitude may need
-  to be squared.
+  to be scaled or squared.
 * devices connecting or disconnecting. From a game developer's
   perspective, these events should be dealt with under the hood.
 * how devices are identified. A player may use two flight sticks for a
@@ -26,30 +26,109 @@ not be concerned with details like...
   "uniquely", and should be mappable independent of one another. Even
   with two identical sticks, there should be a way to check which is
   which ("Press trigger on left stick"), and label them accordingly.
-* providing an interface to work with the mappings.
+* providing an interface to work with the mappings. STATUS: 
+* if the state, when polled at different times during a frame, is still
+  the same; It just should be. This is quite an edge case, but may cause
+  hard to reproduce bugs.
 
-This project's state is pre-alpha. I've barely defined how things will
-work. The rough shape is:
 
-* A `context` is a set of `virtual input`s.
+Status
+------
+
+This project's state is alpha. The polling interface works quite well and is feature-rich. The major missing features for beta are throwing Panda3D events, and freezing the state for a frame.
+
+
+Installation
+------------
+
+`pip install panda3d-keybindings`
+
+
+Concepts
+--------
+
 * A `virtual input` a button or axis (or other) with a semantic to the
-  game.
+  game. It has
+  * a type, which is one of
+    * `button`: `True` if the button is pressed, `False` otherwise.
+    * `trigger`: `True` for the frame in which the button is pressed.
+    * `axis`: A `float`.
+    * `axis2d`: `panda3d.core.Vec2`.
+    * `axis3d`: `panda3d.core.Vec3`.
+  * a device order, stating the highest priority to the lowest to check
+    for presence and state when reading a context.
+  * a sensor definition for each usable device. This defines the
+    buttons / axes used, and specifies post-processing that is to be
+    done on them.
+* A `context` is a set of `virtual input`s that is read together. It is
+  an organizational unit to make it easy for the application to activate
+  or deactivate parts of the user input interface. For example, opening
+  the game's ingame menu may activate the `menu` context, and deactivate
+  the `character_movement` one.
 * When a device is connected, it is assigned to a `player`, or kept
   unassigned for the time being. Players will only be able to read data
   from devices assigned to them.
+  NOTE: Currently only single-player assigners exist off-the-shelf.
 * There's a TOML file that defines for each `player` and each `context`
   in what order to check devices for a `virtual input`. If the first
   enumerated device isn't assigned to the `player`, the next one will be
   checked, and so on, until one is found that can be read.
+  NOTE: Currently no concept of players exists in the config file.
   * Each entry should contain filterable data like device type, device
     ID, etc.
-* When a context's state is polled, the check outlined above happens,
-  then the configured `mapping transformation` is applied, and the read
-  state is added to the poll. At the end, the gathered results are
-  returned.
+    NOTE: Utterly unimplemented.
+
+
+Example
+-------
+
+Setting up an application for use with this module is easy:
+
+    from direct.showbase.ShowBase import ShowBase
+    from keybindings.device_listener import add_device_listener
+    from keybindings.device_listener import SinglePlayerAssigner
+
+    ShowBase()
+    add_device_listener(
+        config_file='keybindings.toml',
+        assigner=SinglePlayerAssigner(),
+    )
+
+Now there is a `base.device_listener`.
+
+A keybinding configuration could look like this:
+
+    [demo_context]
+    
+      [demo_context.demo_button]
+      _type = "button"
+      _device_order = ["gamepad", "flight_stick", "keyboard"]
+      gamepad = "face_a"
+      flight_stick = "trigger"
+      keyboard = "q"
+
+
+When the context `demo_context` is read, ...
+
+    base.device_listener.read_context('demo_context')
+
+...the result may look like this:
+
+    {'demo_button': False}
+
+This means that due to the config snippet above, the device listener has
+checked whether a gamepad is connected; If so, the state of `face_a` is used, if not, the `flight_stick` is tested next, and so on. In this example, a device has been found and the button has not been pressed.
+
+If no device type is found to be connected, the returned state would be `None`. Do note that if a keyboard is listed as a possible option, it will be assumed to be present.
 
 
 TODO
 ----
 
-* Everything
+* Document sensor definitions
+  'a', 'left_x,left_y', 'left_x:flip,left_y', 'mouse_pos_delta'
+* Multi-user Assigner
+* Throw events
+* Freeze whole state each frame (currently only done for `mouse_*`)
+* Tell Sensors.get_config() that flags exist.
+* Upgrade example
