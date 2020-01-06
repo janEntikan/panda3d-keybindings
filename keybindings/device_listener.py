@@ -14,27 +14,71 @@ axis_names = [axis.name for axis in InputDevice.Axis]
 
 
 class Sensor:
-    def __init__(self, config):
-        self.name = config
-        if self.name in axis_names:
+    mouse_sensors = [
+        "mouse_x",
+        "mouse_y",
+        "mouse_x_delta",
+        "mouse_y_delta",
+    ]
+    delta_sensors = [
+        "mouse_x_delta",
+        "mouse_y_delta",
+    ]
+
+    def __init__(self, sensor):
+        self.sensor = sensor
+        if self.sensor in axis_names:
             self.axis = True
         else:
             self.axis = False
+        self.mouse_pos = None
+        self.mouse_delta = None
 
     def get_config(self):
-        return self.name
+        return self.sensor
 
     def read(self, device):
         if not device is None:  # Not a keyboard
             if self.axis:
-                axis = device.find_axis(InputDevice.Axis[self.name])
+                axis = device.find_axis(InputDevice.Axis[self.sensor])
                 return axis.value
             else:
-                button = device.find_button(self.name)
+                button = device.find_button(self.sensor)
                 return button.pressed
         else:  # Keyboard
-            button = ButtonRegistry.ptr().find_button(self.name)
-            return base.mouseWatcherNode.is_button_down(button)
+            if self.sensor in self.mouse_sensors:
+                if self.sensor in self.delta_sensors:
+                    if self.mouse_delta is None:
+                        return None
+                    else:
+                        if self.sensor == "mouse_x_delta":
+                            return self.mouse_delta.x
+                        else:
+                            return self.mouse_delta.y
+                else:
+                    if self.mouse_pos is None:
+                        return None
+                    else:
+                        if self.sensor == "mouse_x":
+                            return self.mouse_pos.x
+                        else:
+                            return self.mouse_pos.y
+            else:
+                button = ButtonRegistry.ptr().find_button(self.sensor)
+                return base.mouseWatcherNode.is_button_down(button)
+
+    def push_events(self, device):
+        if self.sensor in self.mouse_sensors:
+            if base.mouseWatcherNode.has_mouse():
+                mouse_pos = base.mouseWatcherNode.get_mouse()
+                if self.mouse_pos is not None:
+                    self.mouse_delta = mouse_pos - self.mouse_pos
+                else:
+                    self.mouse_delta = None
+                self.mouse_pos = Vec2(mouse_pos)
+            else:
+                self.mouse_pos = None
+                self.mouse_delta = None
 
 
 class Mapping:
@@ -50,6 +94,10 @@ class Mapping:
         states = [sensor.read(device) for sensor in self.sensors]
         return states
 
+    def push_events(self, device):
+        for sensor in self.sensors:
+            sensor.push_events(device)
+
 
 class VirtualInput:
     def __init__(self, config):
@@ -62,6 +110,9 @@ class VirtualInput:
         }
         assert all(device in self.mappings for device in devices)
 
+        self.last_state = None
+        self.triggered = None
+
     def get_config(self):
         config = OrderedDict([
             ('_type', self.type),
@@ -73,27 +124,37 @@ class VirtualInput:
         ]))
         return config
 
-    def read_raw(self, devices):
+    def get_device_and_mapping(self, devices):
         for candidate in self.device_order:
             if candidate in devices:
                 device = devices[candidate]
                 mapping = self.mappings[candidate]
-                input_state = mapping.read(device)
-                return input_state
+                return (device, mapping)
             if candidate == 'keyboard':
                 mapping = self.mappings[candidate]
-                input_state = mapping.read(None)
-                return input_state
+                return (None, mapping)
+        return None
+
+    def read_raw(self, devices):
+        thing = self.get_device_and_mapping(devices)
+        if thing is not None:
+            device, mapping = thing
+            input_state = mapping.read(device)
+            return input_state
         return None
 
     def read(self, devices):
         input_state = self.read_raw(devices)
         if input_state is not None:
-            if self.type == 'button':
+            if all(s is None for s in input_state):
+                input_state = None
+            elif self.type == 'button':
                 if len(input_state) == 1 and isinstance(input_state[0], bool):
                     input_state = input_state[0]
                 else:
                     raise Exception("Uninterpretable virtual state")
+            elif self.type == 'trigger':
+                input_state = self.triggered
             elif self.type == 'axis':
                 if len(input_state) == 1 and isinstance(input_state[0], float):
                     input_state = input_state[0]
@@ -151,6 +212,22 @@ class VirtualInput:
                 raise Exception("Uninterpretable virtual state")
         return input_state
 
+    def push_events(self, devices):
+        device, mapping = self.get_device_and_mapping(devices)
+        mapping.push_events(device)
+
+        input_state = self.read_raw(devices)
+        if self.type == 'trigger':
+            if input_state is not None:
+                input_state = input_state[0]
+                if input_state and not self.last_state:
+                    self.triggered = True  # Trigger has been pressed
+                elif input_state and self.last_state:
+                    self.triggered = False  # Trigger held pressed
+                elif not input_state:
+                    self.triggered = False  # Trigger released or idle
+        self.last_state = input_state
+
 
 class Context:
     def __init__(self, config):
@@ -173,6 +250,10 @@ class Context:
         }
         return result
 
+    def push_events(self, devices):
+        for _name, virtual_input in self.virtual_inputs.items():
+            virtual_input.push_events(devices)
+        
 
 class LastConnectedAssigner:
     def __init__(self):
@@ -196,6 +277,9 @@ class LastConnectedAssigner:
         else:
             full_id = self.device.device_class.name                
             return {full_id: self.device}
+
+    def get_users(self):
+        return [None]
 
 
 class SinglePlayerAssigner:
@@ -223,15 +307,23 @@ class SinglePlayerAssigner:
     def get_devices(self, user=None):
         return self.devices
 
+    def get_users(self):
+        return [None]
+
 
 class DeviceListener(DirectObject):
-    def __init__(self, assigner, debug=False, config_file="keybindings.toml"):
+    def __init__(self, assigner, debug=False, config_file="keybindings.toml", task=True, task_args=None):
         self.debug = debug
         self.read_config(config_file)
 
         self.assigner = assigner
         self.accept("connect-device", self.connect)
         self.accept("disconnect-device", self.disconnect)
+
+        if task:
+            if task_args is None:
+                task_args = dict(sort=-10)
+            base.task_mgr.add(self.push_device_events, "device_listener", **task_args)
 
     def connect(self, device):
         """Event handler that is called when a device is discovered."""
@@ -264,8 +356,17 @@ class DeviceListener(DirectObject):
 
     def read_context(self, context, user=None):
         assert context in self.contexts
-        devices = self.assigner.get_devices(user=user)
+        devices = self.assigner.get_devices(user)
         return self.contexts[context].read(devices)
+
+    def push_device_events(self, task):
+        users = self.assigner.get_users()
+        contexts = self.contexts.keys()
+        for user in users:
+            devices = self.assigner.get_devices(user)
+            for context in contexts:
+                self.contexts[context].push_events(devices)
+        return task.cont
 
 
 def add_device_listener(assigner=None, debug=False, config_file="keybindings.toml"):
