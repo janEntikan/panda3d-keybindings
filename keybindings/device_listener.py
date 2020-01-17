@@ -43,8 +43,8 @@ class Sensor:
         self.flags = OrderedDict()
         for flag in flags:
             name, _, arg = flag.partition('=')
-            assert name in ['flip', 'scale', 'button<', 'button>']
-            if name in ['scale', 'button<', 'button>']:
+            assert name in ['flip', 'scale', 'button<', 'button>', 'exp']
+            if name in ['scale', 'button<', 'button>', 'exp']:
                 arg = float(arg)
             else:
                 assert arg == ''
@@ -98,6 +98,8 @@ class Sensor:
                 state = state <= arg
             elif name == 'button>':
                 state = state >= arg
+            elif name == 'exp':
+                state = (abs(state) ** arg) * (state / abs(state))
 
         return state
 

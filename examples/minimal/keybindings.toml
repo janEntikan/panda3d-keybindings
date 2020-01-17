@@ -22,7 +22,7 @@
   [demo_context.demo_axis_2d]
   _type = "axis2d"
   _device_order = ["gamepad", "keyboard"]
-  gamepad = "left_x,left_y"
+  gamepad = "left_x:exp=2.0,left_y:exp=0.5"
   keyboard = "a,d,s,w"
 
   [demo_context.demo_axis_3d]

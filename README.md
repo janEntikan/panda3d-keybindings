@@ -131,6 +131,7 @@ TODO
 
 * Document sensor definitions
   'a', 'left_x,left_y', 'left_x:flip,left_y', 'mouse_pos_delta'
+* Sphinx documentation
 * Multi-user Assigner
 * Throw events
 * Freeze whole state each frame (currently only done for `mouse_*`)
