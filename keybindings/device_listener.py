@@ -6,6 +6,7 @@ from panda3d.core import InputDevice
 from panda3d.core import ButtonRegistry
 from panda3d.core import Vec2
 from panda3d.core import Vec3
+from panda3d.core import WindowProperties
 
 from direct.showbase.DirectObject import DirectObject
 
@@ -353,6 +354,11 @@ class DeviceListener(DirectObject):
     def __init__(self, assigner, debug=False, config_file="keybindings.toml", task=True, task_args=None, center_mouse=False):
         self.debug = debug
         self.center_mouse = center_mouse
+        if center_mouse:
+            props = WindowProperties()
+            props.setCursorHidden(True)
+            props.setMouseMode(WindowProperties.M_relative)
+            base.win.requestProperties(props)
 
         self.read_config(config_file)
 
@@ -414,7 +420,7 @@ class DeviceListener(DirectObject):
                 base.win.getYSize() // 2,
             )
 
-        return task.cont
+            return task.cont
 
 
 def add_device_listener(assigner=None, debug=False, config_file="keybindings.toml", center_mouse=False):
