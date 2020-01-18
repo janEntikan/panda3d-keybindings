@@ -350,8 +350,10 @@ class SinglePlayerAssigner:
 
 
 class DeviceListener(DirectObject):
-    def __init__(self, assigner, debug=False, config_file="keybindings.toml", task=True, task_args=None):
+    def __init__(self, assigner, debug=False, config_file="keybindings.toml", task=True, task_args=None, center_mouse=False):
         self.debug = debug
+        self.center_mouse = center_mouse
+
         self.read_config(config_file)
 
         self.assigner = assigner
@@ -404,14 +406,23 @@ class DeviceListener(DirectObject):
             devices = self.assigner.get_devices(user)
             for context in contexts:
                 self.contexts[context].push_events(devices)
+
+        if self.center_mouse and base.mouseWatcherNode.has_mouse():
+            base.win.movePointer(
+                0,
+                base.win.getXSize() // 2,
+                base.win.getYSize() // 2,
+            )
+
         return task.cont
 
 
-def add_device_listener(assigner=None, debug=False, config_file="keybindings.toml"):
+def add_device_listener(assigner=None, debug=False, config_file="keybindings.toml", center_mouse=False):
     if assigner is None:
         assigner = LastConnectedAssigner()
     base.device_listener = DeviceListener(
         assigner,
         debug=debug,
         config_file=config_file,
+        center_mouse=center_mouse,
     )
