@@ -39,7 +39,7 @@ not be concerned with details like...
 Status
 ------
 
-This project's state is alpha. The polling interface works quite well and is feature-rich. The major missing features for beta are throwing Panda3D events, and freezing the state for a frame.
+This project's state is alpha. The polling interface works quite well and is feature-rich.
 
 
 Installation
