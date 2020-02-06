@@ -350,9 +350,9 @@ class SinglePlayerAssigner:
 
 
 class DeviceListener(DirectObject):
-    def __init__(self, assigner, debug=False, config_file="keybindings.toml", task=True, task_args=None):
+    def __init__(self, assigner, debug=False, config_module=None, config_file="keybindings.toml", task=True, task_args=None):
         self.debug = debug
-        self.read_config(config_file)
+        self.read_config(config_module, config_file)
 
         self.assigner = assigner
         self.accept("connect-device", self.connect)
@@ -377,9 +377,20 @@ class DeviceListener(DirectObject):
             print("{} disconnected".format(device.device_class.name))
         self.assigner.disconnect(device)
 
-    def read_config(self, config_file):
-        with open(config_file, 'r') as f:
-            config = toml.loads(f.read(), _dict=OrderedDict)
+    def read_config(self, config_module, config_file):
+        if config_module is None:
+            # FIXME: This is old code that worked directly on paths. It
+            # should probably be ripped out.
+            with open(config_file, 'r') as f:
+                config = toml.loads(f.read(), _dict=OrderedDict)
+        else:
+            config = toml.loads(
+                importlib.resources.read_text(
+                    config_module,
+                    config_file,
+                ),
+                _dict=OrderedDict,
+            )
         self.contexts = {
             context_name: Context(config[context_name])
             for context_name in config.keys()
@@ -407,11 +418,12 @@ class DeviceListener(DirectObject):
         return task.cont
 
 
-def add_device_listener(assigner=None, debug=False, config_file="keybindings.toml"):
+def add_device_listener(assigner=None, debug=False, config_module=None, config_file="keybindings.toml"):
     if assigner is None:
         assigner = LastConnectedAssigner()
     base.device_listener = DeviceListener(
         assigner,
         debug=debug,
+        config_module=None,
         config_file=config_file,
     )
