@@ -139,3 +139,4 @@ TODO
 * Add subconsoles for panda3d-cefconsole
   * Configure keybindings
   * Reassign devices
+* `setup.py`: Go over `packages=` again.
