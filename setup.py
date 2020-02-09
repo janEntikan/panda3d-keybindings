@@ -15,7 +15,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='panda3d-keybindings',
-    version='0.0.3b',
+    version='0.0.4b',
     description='A more abstract interface for using input devices in Panda3D.',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -33,10 +33,11 @@ setup(
     ],
     keywords='panda3d keybinding keybindings keymapping',
     package_dir={'': 'keybindings'},
-    packages=find_packages(where='keybindings'),
-    python_requires='>=3.5, <3.8.*',
+    #packages=find_packages(where='keybindings'),
+    packages=[''],
+    python_requires='>=3.5, <4.*',
     install_requires=['panda3d'],
-    ### Retained for defconsole upgrade
+    ### Retained for cefconsole upgrade
     # extras_require={
     #     'cefconsole': ['panda3d-cefconsole'],
     # },
