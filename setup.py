@@ -15,7 +15,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='panda3d-keybindings',
-    version='0.0.6b',
+    version='0.0.7b',
     description='A more abstract interface for using input devices in Panda3D.',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -30,6 +30,7 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
     ],
     keywords='panda3d keybinding keybindings keymapping',
     #package_dir={'': 'keybindings'},
