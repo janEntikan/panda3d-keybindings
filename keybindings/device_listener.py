@@ -1,5 +1,7 @@
 from collections import OrderedDict
 
+from pathlib import Path
+
 import toml
 
 from panda3d.core import InputDevice
@@ -377,17 +379,19 @@ class DeviceListener(DirectObject):
             print("{} disconnected".format(device.device_class.name))
         self.assigner.disconnect(device)
 
-    def read_config(self, config_module, config_file):
+    def read_config(self, config_module, config_file_name):
         if config_module is None:
             # FIXME: This is old code that worked directly on paths. It
             # should probably be ripped out.
-            with open(config_file, 'r') as f:
+            main_dir = Path(base.main_dir)
+            config_file = Path(config_file_name)
+            with open(main_dir / config_file, 'r') as f:
                 config = toml.loads(f.read(), _dict=OrderedDict)
         else:
             config = toml.loads(
                 importlib.resources.read_text(
                     config_module,
-                    config_file,
+                    config_file_name,
                 ),
                 _dict=OrderedDict,
             )
