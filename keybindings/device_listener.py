@@ -352,6 +352,22 @@ class SinglePlayerAssigner:
 
 
 class DeviceListener(DirectObject):
+    """
+    Receives connection / disconnection events and informs the assigner
+
+    :assigner:
+        FIXME
+    :debug:
+        FIXME
+    :config_module:
+        If provided, the Listener will try to read the config file from that module.
+    :config_file:
+        The name of the config file in which the keybindings reside, by default keybindings.toml
+    :task:
+        Creates a task on creation (at sort -10) that calls push_device_events... FIme: ...which does what?
+    :task_args:
+        FIXME: Apparently these do not even make sense, as they are not expected?
+    """
     def __init__(self, assigner, debug=False, config_module=None, config_file="keybindings.toml", task=True, task_args=None):
         self.debug = debug
         self.read_config(config_module, config_file)

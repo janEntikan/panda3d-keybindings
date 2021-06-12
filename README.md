@@ -13,7 +13,7 @@ not be concerned with details like...
   buttons, from WASD, or a dance pad.
 * how the player wants the inputs from the devices combined. There may
   be a different list of priorities for different abstract inputs with
-  regard what devices should be checked. A player may prefer to cotrol
+  regard what devices should be checked. A player may prefer to control
   character movement on a gamepad, but functions like invoking and
   working in menus with the keyboard.
 * how input is preprocessed. Badly manufactured sticks create noise near
@@ -26,7 +26,7 @@ not be concerned with details like...
   "uniquely", and should be mappable independent of one another. Even
   with two identical sticks, there should be a way to check which is
   which ("Press trigger on left stick"), and label them accordingly.
-  NOTE: Not implemented yes.
+  NOTE: Not implemented yet.
 * providing an interface to work with the mappings. NOTE: Completely
   inexistent so far.
 * if the state, when polled at different times during a frame, is still
@@ -132,9 +132,17 @@ TODO
 * Document sensor definitions
   'a', 'left_x,left_y', 'left_x:flip,left_y', 'mouse_pos_delta'
 * Sphinx documentation
+* Repeating buttons: A trigger that re-Trues every <time_span> as long as the button is pressed.
+* Raw keys: `keyboard = "raw-z"`; Requires Panda3D API support.
+* If an axis/button is not use, give lower-priority devices a chance to be using it.
+* Deadzones and recalibration post-processing for jittery / uncentered devices.
+
+
+* A GUI for re-use in games that use this package on top of all this config stuff, including device_tester's capabilities.
 * Multi-user Assigner
 * Throw events
 * Freeze whole state each frame (currently only done for `mouse_*`)
+  NOTE: Really? I thought I did that.
 * Upgrade example
 * Add subconsoles for panda3d-cefconsole
   * Configure keybindings
