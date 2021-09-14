@@ -16,6 +16,7 @@ axis_names = [axis.name for axis in InputDevice.Axis]
 
 
 class Sensor:
+    """A button or axis, and its post-processing flags."""
     mouse_sensors = [
         "mouse_x",
         "mouse_y",
@@ -52,7 +53,7 @@ class Sensor:
                 assert arg == ''
                 arg = None
             self.flags[name] = arg
-        
+
     def get_config(self):
         result = self.sensor
         for name, arg in self.flags.items():
@@ -62,6 +63,7 @@ class Sensor:
         return result
 
     def read(self, device):
+        """Read the sensor's current state and post-process it."""
         if not device is None:  # Not a keyboard
             if self.axis:
                 axis = device.find_axis(InputDevice.Axis[self.sensor])
@@ -120,6 +122,12 @@ class Sensor:
 
 
 class Mapping:
+    """
+    A mapping is a set of sensors, and corresponds to an input 
+    definition line in tehe configuration file, e.g.
+    
+        spatial_mouse = "yaw:flip:scale=3,pitch:scale=2"
+    """
     def __init__(self, config):
         sensor_configs = config.split(',')
         self.sensors = [Sensor(s_config) for s_config in sensor_configs]
@@ -138,6 +146,19 @@ class Mapping:
 
 
 class VirtualInput:
+    """
+    A game logic input within an input context. It has a name, a type
+    (e.g. `button` or `axis2d´), and an order in which devices will be
+    checked for their current state. In a configuration file, it looks
+    like this...
+
+        [context.name_of_virtual_input]
+        _type = "button"
+        _device_order = ["gamepad", "keyboard"]
+
+    ...followed by the mappings for the devices mentioned in the device
+    order, and their sensors.
+    """
     def __init__(self, config):
         self.type = config['_type']
         self.device_order = config['_device_order']
@@ -183,6 +204,7 @@ class VirtualInput:
 
     def read(self, devices):
         input_state = self.read_raw(devices)
+        # import pdb; pdb.set_trace()
         if input_state is not None:
             if all(s is None for s in input_state):
                 input_state = None
@@ -357,19 +379,11 @@ class DeviceListener(DirectObject):
 
     :assigner:
         FIXME
-    :debug:
-        FIXME
-    :config_module:
-        If provided, the Listener will try to read the config file from that module.
-    :config_file:
-        The name of the config file in which the keybindings reside, by default keybindings.toml
     :task:
-        Creates a task on creation (at sort -10) that calls push_device_events... FIme: ...which does what?
-    :task_args:
-        FIXME: Apparently these do not even make sense, as they are not expected?
+        Creates a task on creation (at sort -10) that calls
+        push_device_events.
     """
-    def __init__(self, assigner, debug=False, config_module=None, config_file="keybindings.toml", task=True, task_args=None):
-        self.debug = debug
+    def __init__(self, assigner, config=None, task=True, task_args=None):
         self.read_config(config_module, config_file)
 
         self.assigner = assigner
@@ -438,12 +452,11 @@ class DeviceListener(DirectObject):
         return task.cont
 
 
-def add_device_listener(assigner=None, debug=False, config_module=None, config_file="keybindings.toml"):
+# FIXME: def add_device_listener(assigner=None, debug=False, config_module=None, config_file="keybindings.toml"):
+def add_device_listener(assigner=None, config=None):
     if assigner is None:
         assigner = LastConnectedAssigner()
     base.device_listener = DeviceListener(
         assigner,
-        debug=debug,
-        config_module=None,
-        config_file=config_file,
+        config=config,
     )

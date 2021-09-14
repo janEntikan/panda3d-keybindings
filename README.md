@@ -39,7 +39,8 @@ not be concerned with details like...
 Status
 ------
 
-This project's state is alpha. The polling interface works quite well and is feature-rich.
+This project's state is alpha. The polling interface works quite well
+and is feature-rich.
 
 
 Installation
@@ -121,30 +122,42 @@ When the context `demo_context` is read, ...
     {'demo_button': False}
 
 This means that due to the config snippet above, the device listener has
-checked whether a gamepad is connected; If so, the state of `face_a` is used, if not, the `flight_stick` is tested next, and so on. In this example, a device has been found and the button has not been pressed.
+checked whether a gamepad is connected; If so, the state of `face_a` is
+used, if not, the `flight_stick` is tested next, and so on. In this
+example, a device has been found and the button has not been pressed.
 
-If no device type is found to be connected, the returned state would be `None`. Do note that if a keyboard is listed as a possible option, it will be assumed to be present.
+If no device type is found to be connected, the returned state would be
+`None`. Do note that if a keyboard is listed as a possible option, it
+will be assumed to be present.
 
 
 TODO
 ----
 
-* Document sensor definitions
-  'a', 'left_x,left_y', 'left_x:flip,left_y', 'mouse_pos_delta'
-* Sphinx documentation
-* Repeating buttons: A trigger that re-Trues every <time_span> as long as the button is pressed.
-* Raw keys: `keyboard = "raw-z"`; Requires Panda3D API support.
-* If an axis/button is not use, give lower-priority devices a chance to be using it.
-* Deadzones and recalibration post-processing for jittery / uncentered devices.
-
-
-* A GUI for re-use in games that use this package on top of all this config stuff, including device_tester's capabilities.
-* Multi-user Assigner
-* Throw events
 * Freeze whole state each frame (currently only done for `mouse_*`)
   NOTE: Really? I thought I did that.
+* Allow for input from lower-priority devices: If an axis/button is not
+  in use, give lower-priority devices a chance to be using it.
+* Repeating buttons: A trigger that re-Trues every <time_span> as long
+  as the button is pressed.
+* Document sensor definitions
+  'a', 'left_x,left_y', 'left_x:flip,left_y', 'mouse_pos_delta'
+  Sensors are comma-separated: <sensor_1>,<sensor_2>,<sensor_3>
+  Each sensor can take filters: <sensor_input>:<filter_1>:<filter_2>
+            flip: state *= -1
+            scale=<factor>: state *= arg
+            button<=<threshold>: state = state <= arg
+            button>=<threshold>: state = state >= arg
+            exp=<exponent>: state = (abs(state) ** arg) * (state / abs(state))
+* Doubleclick detection
+* Click-and-drag support for mouse
+* Sphinx documentation
+* Raw keys: `keyboard = "raw-z"`; Requires Panda3D API support.
+* Deadzones and recalibration post-processing for jittery / uncentered
+  devices.
+* A GUI for re-use in games that use this package on top of all this
+  config stuff, including device_tester's capabilities.
+* Multi-user Assigner
+* Throw events
 * Upgrade example
-* Add subconsoles for panda3d-cefconsole
-  * Configure keybindings
-  * Reassign devices
 * `setup.py`: Go over `packages=` again.
