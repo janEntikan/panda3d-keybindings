@@ -13,6 +13,7 @@ from direct.gui.DirectGui import DirectFrame
 
 from metagui.gui import SizeSpec
 from metagui.gui import WholeScreen
+from metagui.gui import ScrollableFrame
 from metagui.gui import HorizontalFrame
 from metagui.gui import VerticalFrame
 from metagui.gui import Element
@@ -264,7 +265,8 @@ if __name__ == '__main__':
                 spacer(double_spacer_width),
                 # Virtual inputs
                 VerticalFrame(
-                    *[virtual_input_frame(virtual_input_name, virtual_input) for virtual_input_name, virtual_input in context.items()],
+                    *[virtual_input_frame(virtual_input_name, virtual_input)
+                      for virtual_input_name, virtual_input in context.items()],
                 ),
                 # Spacer
                 spacer(double_spacer_width),
@@ -272,15 +274,18 @@ if __name__ == '__main__':
         )
 
     gui = WholeScreen(
-        HorizontalFrame(
-            spacer(double_spacer_width),
-            VerticalFrame(
-                spacer(spacer_height),
-                *[context_frame(context_name, context) for context_name, context in config.items()],
-                spacer(spacer_height),
+        ScrollableFrame(
+            HorizontalFrame(
+                spacer(double_spacer_width),
+                VerticalFrame(
+                    spacer(spacer_height),
+                    *[context_frame(context_name, context)
+                      for context_name, context in config.items()],
+                    spacer(spacer_height),
+                ),
+                spacer(double_spacer_width),
             ),
-            spacer(double_spacer_width),
-        ),
+        ),            
     )
     gui.create()
 
