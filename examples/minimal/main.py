@@ -1,5 +1,7 @@
 import sys
 
+import toml
+
 from panda3d.core import NodePath
 from panda3d.core import TextNode
 from panda3d.core import TextFont
@@ -8,8 +10,8 @@ from direct.showbase.ShowBase import ShowBase
 from direct.gui.DirectGui import DirectLabel
 from direct.gui.DirectGui import DirectFrame
 
-#from keybindings.device_listener import add_device_listener
-#from keybindings.device_listener import SinglePlayerAssigner
+from keybindings.device_listener import add_device_listener
+from keybindings.device_listener import SinglePlayerAssigner
 
 from metagui.gui import SizeSpec
 from metagui.gui import WholeScreen
@@ -33,10 +35,10 @@ class Application(ShowBase):
         base.accept('escape', sys.exit)
 
         # F10 for frame rate meter
-        base.frame_rame_meter_visible = False
-        base.set_frame_rate_meter(base.frame_rame_meter_visible)
+        base.frame_rate_meter_visible = False
+        base.set_frame_rate_meter(base.frame_rate_meter_visible)
         def toggle_frame_rate_meter():
-            base.frame_rame_meter_visible = not base.frame_rame_meter_visible
+            base.frame_rate_meter_visible = not base.frame_rate_meter_visible
             base.set_frame_rate_meter(base.frame_rame_meter_visible)
         base.accept('f10', toggle_frame_rate_meter)
 
@@ -51,9 +53,13 @@ if __name__ == '__main__':
     #from panda3d.core import load_prc_file_data
     #load_prc_file_data("", "text-pixels-per-unit 90")
     #load_prc_file_data("", "text-page-size 1024 1024")
-    
+
     Application()
-    #add_device_listener(assigner=SinglePlayerAssigner(), config=config)
+    add_device_listener(
+        assigner=SinglePlayerAssigner(),
+        config=config,
+    )
+    context = base.device_listener.read_context('demo_context')
 
     # Text representation
     for context_name, context in config.items():
@@ -285,7 +291,7 @@ if __name__ == '__main__':
                 ),
                 spacer(double_spacer_width),
             ),
-        ),            
+        ),
     )
     gui.create()
 

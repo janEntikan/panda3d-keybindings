@@ -384,8 +384,15 @@ class DeviceListener(DirectObject):
         push_device_events.
     """
     def __init__(self, assigner, config=None, task=True, task_args=None):
-        self.read_config(config_module, config_file)
-
+        if config is None:
+            # FIXME: Old code left as cookbook
+            config = toml.load(base.main_dir+'/keybindings.toml'),
+            main_dir = Path(base.main_dir)
+            config_file = Path(config_file_name)
+            with open(main_dir / config_file, 'r') as f:
+                config = toml.loads(f.read(), _dict=OrderedDict)
+                config = {}
+        self.read_config(config)
         self.assigner = assigner
         self.accept("connect-device", self.connect)
         self.accept("disconnect-device", self.disconnect)
@@ -393,7 +400,11 @@ class DeviceListener(DirectObject):
         if task:
             if task_args is None:
                 task_args = dict(sort=-10)
-            base.task_mgr.add(self.push_device_events, "device_listener", **task_args)
+            base.task_mgr.add(
+                self.push_device_events,
+                "device_listener",
+                **task_args,
+            )
 
     def connect(self, device):
         """Event handler that is called when a device is discovered."""
@@ -409,22 +420,9 @@ class DeviceListener(DirectObject):
             print("{} disconnected".format(device.device_class.name))
         self.assigner.disconnect(device)
 
-    def read_config(self, config_module, config_file_name):
-        if config_module is None:
-            # FIXME: This is old code that worked directly on paths. It
-            # should probably be ripped out.
-            main_dir = Path(base.main_dir)
-            config_file = Path(config_file_name)
-            with open(main_dir / config_file, 'r') as f:
-                config = toml.loads(f.read(), _dict=OrderedDict)
-        else:
-            config = toml.loads(
-                importlib.resources.read_text(
-                    config_module,
-                    config_file_name,
-                ),
-                _dict=OrderedDict,
-            )
+    def read_config(self, config):
+        # FIXME: This is old code that worked directly on paths. It
+        # should probably be ripped out.
         self.contexts = {
             context_name: Context(config[context_name])
             for context_name in config.keys()
