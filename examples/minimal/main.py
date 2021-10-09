@@ -69,9 +69,9 @@ class Visualizer(Element, ValueListener):
             if value is None:
                 self.np['frameColor'] = (0.3, 0.3, 0.3, 1)
             elif value is True:
-                self.np['frameColor'] = (0, 1, 0, 1)
+                self.np['frameColor'] = (0.2, 1, 0.2, 1)
             elif value is False:
-                self.np['frameColor'] = (1, 0, 0, 1)
+                self.np['frameColor'] = (1, 0.2, 0.2, 1)
             else:
                 raise ValueError()
         elif self.input_type == 'trigger':
@@ -85,7 +85,7 @@ class Visualizer(Element, ValueListener):
             else:  # value is False
                 if self.trigger_activation is None:
                     self.trigger_activation = 0.0
-                    self.np['frameColor'] = (1, 0, 0, 1)
+                    self.np['frameColor'] = (1, 0.2, 0.2, 1)
         else:
             import pdb; pdb.set_trace()
 
@@ -106,7 +106,7 @@ class Visualizer(Element, ValueListener):
                 )
                 if self.trigger_activation == 0.0:
                     # Signal has decayed, task ends
-                    self.np['frameColor'] = (1, 0, 0, 1)
+                    self.np['frameColor'] = (1, 0.2, 0.2, 1)
                     self.update_task = None
                     return None
                 else:
@@ -188,43 +188,47 @@ if __name__ == '__main__':
     )
 
     # Widget styles
+    background_style = dict(
+        frameColor=(0.2,0.2,0.2,1),
+    )
+
     context_title_style = dict(
         text_font=font,
         text_pos=(0.02, -0.03),
         text_scale=0.1,
         text_align=TextNode.ACenter,
-        text_fg=(0.1, 0.1, 0.1, 1),
-        frameColor=(0.7, 0.7, 0.7, 1),
+        text_fg=(1, 1, 1, 1),
+        frameColor=(0.4, 0.4, 0.4, 1),
     )
     virtual_input_title_style = dict(
-        text_fg=(0.9, 0.9, 0.9, 1),
-        frameColor=(0.5, 0.5, 0.5, 1),
+        text_fg=(0.85, 0.85, 0.85, 1),
+        frameColor=(0.3, 0.3, 0.3, 1),
         **text_title_style,
     )
     device_style = dict(
-        text_fg=(0.9, 0.9, 0.9, 1),
-        frameColor=(0.3, 0.3, 0.3, 1),
+        text_fg=(0.65, 0.65, 0.65, 1),
+        frameColor=(0.25, 0.25, 0.25, 1),
         **text_left_box_style,
     )
     sensor_box_style = dict(
-        text_fg=(1, 1, 1, 1),
-        frameColor=(0, 0, 0, 1),
+        text_fg=(0.7, 0.7, 0.7, 1),
+        frameColor=(0.15, 0.15, 0.15, 1),
         **text_centered_box_style,
     )
     filter_box_style = dict(
-        text_fg=(0.9, 0.9, 0.9, 1),
-        frameColor=(0.15, 0.15, 0.15, 1),
+        text_fg=(0.7, 0.7, 0.7, 1),
+        frameColor=(0.1, 0.1, 0.1, 1),
         **text_centered_box_style,
     )
 
     debug_style = dict(
         #frameColor=(0.47, 0.19, 0.33, 1),
-        frameColor=(0.9, 0.9, 0.9, 1),
+        frameColor=(0.3, 0.3, 0.3, 1),
         **text_centered_box_style,
     )
 
     input_visual_style = dict(
-        frameColor=(1.0, 1.0, 1.0, 1),
+        frameColor=(0.3, 0.3, 0.3, 1),
         **text_centered_box_style,
     )
 
@@ -244,6 +248,15 @@ if __name__ == '__main__':
     input_visual_size = dict(w_min=0.3, w_weight=0.0, h_min=0.3, h_weight=0.0)
 
     # Widgets
+    def default_spacer(dimension):
+        return spacer(dimension, style=background_style)
+
+    def default_spacer_factory(dimension):
+        return spacer_factory(dimension, style=background_style)
+
+    def default_filler():
+        return filler(style=background_style)
+
     def filter_frame(filter_spec):
         name, arg = filter_spec
         if arg is None:
@@ -265,14 +278,14 @@ if __name__ == '__main__':
                 kwargs=dict(text=sensor_input, **sensor_box_style),
                 size_spec=SizeSpec(**filter_width, **text_line_height),
             ),
-            spacer(mini_spacer_width),
+            default_spacer(mini_spacer_width),
             # Filters
             *intersperse(
                 [filter_frame(filter_spec) for filter_spec in filters],
-                spacer_factory(mini_spacer_height),
+                default_spacer_factory(mini_spacer_height),
             ),
             # Filler
-            spacer(text_line_height),
+            default_spacer(text_line_height),
         )
 
     def candidate_frame(candidate):
@@ -286,12 +299,12 @@ if __name__ == '__main__':
                 size_spec=SizeSpec(**device_width, **text_line_height),
             ),
             # Spacer
-            spacer(maxi_spacer_width),
+            default_spacer(maxi_spacer_width),
             # Sensor axes
             VerticalFrame(
                 *intersperse(
                     [sensor_axis_frame(sensor_axis) for sensor_axis in sensor_axes],
-                    spacer_factory(mini_spacer_height),
+                    default_spacer_factory(mini_spacer_height),
                 ),
             ),
             weight=0.0,
@@ -308,72 +321,72 @@ if __name__ == '__main__':
             ),
             HorizontalFrame(
                 # Left-side spacer for candidates
-                spacer(double_spacer_width),
+                default_spacer(double_spacer_width),
                 # Candidates
                 VerticalFrame(
-                    spacer(spacer_height),
+                    default_spacer(spacer_height),
                     *intersperse(
                         [candidate_frame(candidate) for candidate in candidates],
-                        spacer_factory(mini_spacer_height),
+                        default_spacer_factory(mini_spacer_height),
                         first=False, last=False,
                     ),
-                    spacer(spacer_height),
-                    filler(),
+                    default_spacer(spacer_height),
+                    default_filler(),
                     weight=0.0,
                 ),
-                filler(),
+                default_filler(),
                 # Visualizer
                 VerticalFrame(
-                    spacer(spacer_height),
+                    default_spacer(spacer_height),
                     Visualizer(
                         (context_name, virtual_input_name),
                         virtual_input_type,
                         style=input_visual_style,
                         size=input_visual_size,
                     ),
-                    spacer(spacer_height),
-                    filler(),
+                    default_spacer(spacer_height),
+                    default_filler(),
                     weight=0.0,
                 ),
                 # Right-side spacer
-                spacer(double_spacer_width),
+                default_spacer(double_spacer_width),
             ),
         )
 
     def context_frame(context_name, context):
         return VerticalFrame(
-            spacer(spacer_height),
+            default_spacer(spacer_height),
             # Context name
             Element(
                 DirectLabel,
                 kwargs=dict(text=context_name, **context_title_style),
                 size_spec=SizeSpec(**context_height),
             ),
-            spacer(spacer_height),
+            default_spacer(spacer_height),
             HorizontalFrame(
                 # Left-hand spacer
-                spacer(double_spacer_width),
+                default_spacer(double_spacer_width),
                 # Virtual inputs
                 VerticalFrame(
                     *[virtual_input_frame(context_name, virtual_input_name, virtual_input)
                       for virtual_input_name, virtual_input in context.items()],
                 ),
                 # Spacer
-                spacer(double_spacer_width),
+                default_spacer(double_spacer_width),
             ),
         )
 
     gui = WholeScreen(
         ScrollableFrame(
             HorizontalFrame(
-                spacer(double_spacer_width),
+                default_spacer(double_spacer_width),
                 VerticalFrame(
-                    spacer(spacer_height),
+                    default_spacer(spacer_height),
                     *[context_frame(context_name, context)
                       for context_name, context in config.items()],
-                    spacer(spacer_height),
+                    default_spacer(spacer_height),
                 ),
-                spacer(double_spacer_width),
+                default_spacer(double_spacer_width),
             ),
         ),
     )
