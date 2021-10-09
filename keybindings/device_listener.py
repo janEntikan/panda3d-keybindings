@@ -29,7 +29,8 @@ class Sensor:
     ]
 
     def __init__(self, config):
-        sensor, _, flags = config.partition(':')
+        sensor = config[0]
+        flags = config[1:]
 
         self.sensor = sensor
         if self.sensor in axis_names:
@@ -39,13 +40,9 @@ class Sensor:
         self.mouse_pos = None
         self.mouse_delta = None
 
-        if flags == '':
-            flags = []
-        else:
-            flags = flags.split(':')
         self.flags = OrderedDict()
         for flag in flags:
-            name, _, arg = flag.partition('=')
+            name, arg = flag
             assert name in ['flip', 'scale', 'button<', 'button>', 'exp']
             if name in ['scale', 'button<', 'button>', 'exp']:
                 arg = float(arg)
@@ -129,7 +126,7 @@ class Mapping:
         spatial_mouse = "yaw:flip:scale=3,pitch:scale=2"
     """
     def __init__(self, config):
-        sensor_configs = config.split(',')
+        sensor_configs = list(config)
         self.sensors = [Sensor(s_config) for s_config in sensor_configs]
 
     def get_config(self):
@@ -160,14 +157,13 @@ class VirtualInput:
     order, and their sensors.
     """
     def __init__(self, config):
-        self.type = config['_type']
-        self.device_order = config['_device_order']
-        devices = [k for k in config.keys() if not k.startswith('_')]
+        (_type, _device_order) = config
+        self.type = _type
+        self.device_order = [device for device, _ in _device_order]
         self.mappings = {
-            device: Mapping(config[device])
-            for device in devices
+            device: Mapping(filters)
+            for device, filters in _device_order
         }
-        assert all(device in self.mappings for device in devices)
 
         self.last_state = None
         self.triggered = None
@@ -383,7 +379,8 @@ class DeviceListener(DirectObject):
         Creates a task on creation (at sort -10) that calls
         push_device_events.
     """
-    def __init__(self, assigner, config=None, task=True, task_args=None):
+    def __init__(self, assigner, config=None, task=True, task_args=None, debug=False):
+        self.debug = debug
         if config is None:
             # FIXME: Old code left as cookbook
             config = toml.load(base.main_dir+'/keybindings.toml'),

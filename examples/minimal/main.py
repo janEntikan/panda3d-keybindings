@@ -10,9 +10,10 @@ from direct.showbase.ShowBase import ShowBase
 from direct.gui.DirectGui import DirectLabel
 from direct.gui.DirectGui import DirectFrame
 
+from valuereg.value_reg import add_value_registry
+from valuereg.value_reg import ValueListener
 from keybindings.device_listener import add_device_listener
 from keybindings.device_listener import SinglePlayerAssigner
-
 from metagui.gui import SizeSpec
 from metagui.gui import WholeScreen
 from metagui.gui import ScrollableFrame
@@ -48,6 +49,73 @@ class Application(ShowBase):
         base.accept('f11', debug)
 
 
+class Visualizer(Element, ValueListener):
+    def __init__(self, key, input_type, style, size):
+        self.input_type = input_type
+        self.update_task = None
+        Element.__init__(
+            self,
+            DirectLabel,
+            kwargs=dict(text='', **style),
+            size_spec=SizeSpec(**size),
+        )
+        ValueListener.__init__(self)
+        self.register(key)
+        self.trigger_activation = None
+        self.update_task = base.task_mgr.add(self.update_visual)
+
+    def callback(self, key, value):
+        if self.input_type == 'button':
+            if value is None:
+                self.np['frameColor'] = (0.3, 0.3, 0.3, 1)
+            elif value is True:
+                self.np['frameColor'] = (0, 1, 0, 1)
+            elif value is False:
+                self.np['frameColor'] = (1, 0, 0, 1)
+            else:
+                raise ValueError()
+        elif self.input_type == 'trigger':
+            if value is None:
+                self.np['frameColor'] = (0.3, 0.3, 0.3, 1)
+                self.trigger_activation = None
+            elif value is True:
+                self.trigger_activation = 1.0
+                if self.update_task is None:
+                    self.update_task = base.task_mgr.add(self.update_visual)
+            else:  # value is False
+                if self.trigger_activation is None:
+                    self.trigger_activation = 0.0
+                    self.np['frameColor'] = (1, 0, 0, 1)
+        else:
+            import pdb; pdb.set_trace()
+
+    def update_visual(self, task):
+        trigger_decay_time = 0.5
+        if self.input_type == 'trigger':
+            if self.trigger_activation is None:
+                # Device is gone, task ends
+                self.np['frameColor'] = (0.3, 0.3, 0.3, 1)
+                self.update_task = None
+                return None
+            else:
+                # Decay the activation
+                decay = globalClock.dt * (1.0 / trigger_decay_time)
+                self.trigger_activation = max(
+                    0,
+                    self.trigger_activation - decay,
+                )
+                if self.trigger_activation == 0.0:
+                    # Signal has decayed, task ends
+                    self.np['frameColor'] = (1, 0, 0, 1)
+                    self.update_task = None
+                    return None
+                else:
+                    a = self.trigger_activation
+                    intensity = 1.0 - (1.0 - self.trigger_activation) ** 2
+                    self.np['frameColor'] = (0, intensity, 0, 1)
+                    return task.cont
+
+
 if __name__ == '__main__':
     from keybindings_config import config
     #from panda3d.core import load_prc_file_data
@@ -59,7 +127,22 @@ if __name__ == '__main__':
         assigner=SinglePlayerAssigner(),
         config=config,
     )
-    context = base.device_listener.read_context('demo_context')
+    initial_keys = {}
+    for context, virtual_inputs in config.items():
+        for virtual_input in virtual_inputs:
+            initial_keys[(context, virtual_input)] = 0
+    add_value_registry(initial_keys)
+
+    def print_context(task):
+        context_name = 'demo_context'
+        context = base.device_listener.read_context(context_name)
+        for virtual_input, state in context.items():
+            base.value_registry.update(
+                (context_name, virtual_input),
+                state,
+            )
+        return task.cont
+    base.task_mgr.add(print_context)
 
     # Text representation
     for context_name, context in config.items():
@@ -214,7 +297,7 @@ if __name__ == '__main__':
             weight=0.0,
         )
 
-    def virtual_input_frame(virtual_input_name, virtual_input):
+    def virtual_input_frame(context_name, virtual_input_name, virtual_input):
         virtual_input_type, candidates = virtual_input
         return VerticalFrame(
             # Virtual input name and type
@@ -242,10 +325,11 @@ if __name__ == '__main__':
                 # Visualizer
                 VerticalFrame(
                     spacer(spacer_height),
-                    Element(
-                        DirectLabel,
-                        kwargs=dict(text='', **input_visual_style),
-                        size_spec=SizeSpec(**input_visual_size),
+                    Visualizer(
+                        (context_name, virtual_input_name),
+                        virtual_input_type,
+                        style=input_visual_style,
+                        size=input_visual_size,
                     ),
                     spacer(spacer_height),
                     filler(),
@@ -271,7 +355,7 @@ if __name__ == '__main__':
                 spacer(double_spacer_width),
                 # Virtual inputs
                 VerticalFrame(
-                    *[virtual_input_frame(virtual_input_name, virtual_input)
+                    *[virtual_input_frame(context_name, virtual_input_name, virtual_input)
                       for virtual_input_name, virtual_input in context.items()],
                 ),
                 # Spacer

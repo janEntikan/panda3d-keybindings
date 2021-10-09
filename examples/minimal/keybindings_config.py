@@ -23,14 +23,15 @@ config = {
         ),
         'trigger': (
             'trigger', [                            # Triggers are buttons that fire only in the frame that they are pressed
+                ('gamepad', (['face_a'], )),
                 ('keyboard', (['q'], )),
             ],
         ),
-        'repeater': (
-            'repeater:0.5,0.2', [                   # Repeaters are triggers that fire again after an initial / repeating cooldown.
-                ('keyboard', (['q'], )),
-            ],
-        ),
+        # 'repeater': (
+        #     'repeater:0.5,0.2', [                   # Repeaters are triggers that fire again after an initial / repeating cooldown.
+        #         ('keyboard', (['q'], )),
+        #     ],
+        # ),
         'yxcvb': (
             'button', [
                 ('keyboard', (['y'], )),            # Yes, you can use a device multiple times.
@@ -39,32 +40,32 @@ config = {
                 ('keyboard', (['v'], )),
                 ('keyboard', (['b'], )),
         ]),
-        'demo_axis_full': (
-            'axis', [                               # Axes have values from -1 to 1
-                ('gamepad', (['left_x'], )),
-                ('flight_stick', (['roll'], )),
-                ('keyboard', (['a/d'], )),          # An axis input can consist of two input buttons.
-            ],
-        ),
-        'demo_axis_2d': (
-            'axis2d', [                             # Two axes
-                ('gamepad', (
-                    ['left_x', ('exp', 2.0)],
-                    ['left_y', ('exp', 0.5)],       # Second axis? Second sensor axis!
-                ),
-                 ),
-                ('keyboard', (
-                    ['a/d'],
-                    ['s/w'],
-                ),
-                 ),
-            ],
-        ),
-        'demo_axis_3d': (
-            'axis3d', [                             # Three axes
-                ('spatial_mouse', (['x'], ['y'], ['z'])),
-                ('keyboard', (['a/d'], ['s/w'], ['q/e'])),
-            ],
-        ),
+        #'demo_axis_full': (
+        #    'axis', [                               # Axes have values from -1 to 1
+        #        ('gamepad', (['left_x'], )),
+        #        ('flight_stick', (['roll'], )),
+        #        ('keyboard', (['a/d'], )),          # An axis input can consist of two input buttons.
+        #    ],
+        #),
+        #'demo_axis_2d': (
+        #    'axis2d', [                             # Two axes
+        #        ('gamepad', (
+        #            ['left_x', ('exp', 2.0)],
+        #            ['left_y', ('exp', 0.5)],       # Second axis? Second sensor axis!
+        #        ),
+        #         ),
+        #        ('keyboard', (
+        #            ['a/d'],
+        #            ['s/w'],
+        #        ),
+        #         ),
+        #    ],
+        #),
+        #'demo_axis_3d': (
+        #    'axis3d', [                             # Three axes
+        #        ('spatial_mouse', (['x'], ['y'], ['z'])),
+        #        ('keyboard', (['a/d'], ['s/w'], ['q/e'])),
+        #    ],
+        #),
     },
 }
